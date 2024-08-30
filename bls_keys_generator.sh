@@ -19,6 +19,12 @@ LOG_FILE="${LOG_DIR}/script.log"
 # 定义所需的 Python 依赖项列表
 PYTHON_PACKAGES=("eth-account" "blspy")
 
+# 日志记录函数
+echo_to_log() {
+    local message=$1
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $message" >> "$LOG_FILE"
+}
+
 # 检查 Python3 版本
 check_python_version() {
     local python_version
