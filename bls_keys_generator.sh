@@ -280,9 +280,9 @@ check_for_updates() {
 show_menu() {
     echo "欢迎使用以太坊和BLS密钥生成工具 (版本 $VERSION)"
     echo "1. 更新系统"
-    echo "2. 确保Python 3.10和pip已安装"
-    echo "3. 确保必要库已安装"
-    echo "4. 检查所有生成密钥准备工作"
+    echo "2. 安装Python 3.10和pip"
+    echo "3. 安装其他必要库"
+    echo "4. 检查所有生成密钥准备工作（也可以直接选这个）"
     echo "5. 批量生成所有密钥"
     echo "6. 移除脚本和所有相关文件"
     echo "7. 检查更新"
