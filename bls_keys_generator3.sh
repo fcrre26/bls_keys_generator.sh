@@ -82,6 +82,7 @@ ensure_prerequisites() {
 generate_all_keys_from_mnemonic() {
     local mnemonic="$1"
     local num_addresses="$2"
+    local num_bls_keys="$3" # 新增参数，每个地址生成的BLS密钥数量
     local result
     result=$("$VENV_PATH/bin/python3.10" -c '
 import sys
@@ -97,6 +98,7 @@ def int_to_hex(x):
 try:
     mnemonic = "'"$mnemonic"'"
     num_addresses = '"$num_addresses"'
+    num_bls_keys = '"$num_bls_keys"' # 新增变量
     seed_bytes = Bip39SeedGenerator(mnemonic).Generate()
     bip44_mst_ctx = Bip44.FromSeed(seed_bytes, Bip44Coins.ETHEREUM)
     results = []
@@ -110,10 +112,11 @@ try:
         eth_key = keys.PrivateKey(eth_private_key_bytes)
         eth_public_key = eth_key.public_key
         eth_address = eth_key.public_key.to_checksum_address()
-        bls_private_key = G2ProofOfPossession.KeyGen(secrets.token_bytes(32))
-        bls_public_key = G2ProofOfPossession.SkToPk(bls_private_key)
+        for j in range(int(num_bls_keys)): # 循环生成BLS密钥
+            bls_private_key = G2ProofOfPossession.KeyGen(secrets.token_bytes(32))
+            bls_public_key = G2ProofOfPossession.SkToPk(bls_private_key)
 
-        results.append(f"{eth_address}|0x{eth_private_key_bytes.hex()}|{eth_public_key.to_hex()}|0x{int_to_hex(bls_private_key)}|0x{bls_public_key.hex()}")
+            results.append(f"{eth_address}|0x{eth_private_key_bytes.hex()}|{eth_public_key.to_hex()}|0x{int_to_hex(bls_private_key)}|0x{bls_public_key.hex()}")
 
     print("\n".join(results))
 
@@ -170,6 +173,7 @@ batch_generate_all_keys_from_mnemonic() {
     done
 
     read -p "请输入每个助记词要生成的地址数量: " num_addresses
+    read -p "请输入每个地址要生成的BLS密钥数量: " num_bls_keys # 新增输入
     total_mnemonics=$(wc -l < "$temp_input_file")
     current_mnemonic=0
 
@@ -183,7 +187,7 @@ batch_generate_all_keys_from_mnemonic() {
         fi
 
         echo "$mnemonic" >> "$MNEMONIC_FILE"
-        result=$(generate_all_keys_from_mnemonic "$mnemonic" "$num_addresses")
+        result=$(generate_all_keys_from_mnemonic "$mnemonic" "$num_addresses" "$num_bls_keys") # 传递BLS密钥数量
         exit_code=$?
         if [[ $exit_code -eq 0 ]]; then
             valid_result=$(echo "$result" | grep -v "^Error:")
